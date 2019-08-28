@@ -6,12 +6,12 @@ import os
 
 
 class DianPingConsumer(object):
-    def __init__(self, write_file_path, read_file_path):
+    def __init__(self, write_file_path, read_file_path=None):
         self.write_file_path = write_file_path
         self.read_file_path = read_file_path
 
 
-    @staticmethod
+    # @staticmethod
     def parse_url_utils(self, url2):
         """
         解析点评详细页 url
@@ -76,7 +76,7 @@ class DianPingConsumer(object):
                 spider_utils.change_ip_cookies(url2)
                 # spider_utils.change_ip()
                 print("重新执行该方法")
-                return self.parse_url_utils(self, url2)
+                return self.parse_url_utils(url2)
             else:
                 print('---217----')
                 str2 = url2 + "^" + hospital_name + "^" + address + "^" + tel + "^" + score
@@ -87,10 +87,10 @@ class DianPingConsumer(object):
                 #     f.write(str2 + "\n")
         else:
             print('#'*20)
-            return self.parse_url_utils(self, url2)
+            return self.parse_url_utils(url2)
     
     
-    def write_url_result(self):
+    def file_to_file(self):
         """
         读取 url_all.txt, 解析后写入文件
         :return: 
@@ -117,7 +117,7 @@ class DianPingConsumer(object):
         
                 if flag is True:
                     print("开始解析第%d行, %s"%(counter, url))
-                    str2 = province + '^' + city + '^' + region + '^' + self.parse_url_utils(self, url)
+                    str2 = province + '^' + city + '^' + region + '^' + self.parse_url_utils(url)
         
                     with open(self.write_file_path, "a+") as f2:
                         f2.write(str2 + "\n")
@@ -128,13 +128,29 @@ class DianPingConsumer(object):
                     print("结束解析----------" + '\n')
         
                     counter +=1
-        
-    
+
+
+    def kafka_to_file(self, args):
+        province = args.get('province')
+        city = args.get('city')
+        region = args.get('region')
+        url = args.get('url')
+
+        str2 = province + '^' + city + '^' + region + '^' + self.parse_url_utils(url)
+
+        with open(self.write_file_path, "a+") as f2:
+            f2.write(str2 + "\n")
+
 if __name__ == '__main__':
     write_file_path1 = 'dianping_hangzhou_data_spa.txt'
     read_file_path1 = '../spider_producer/url_all.txt'
 
     dian_ping_consumer = DianPingConsumer(write_file_path1, read_file_path1)
 
-    dian_ping_consumer.write_url_result()
+    # dian_ping_consumer.file_to_file()
+
+
+    res = dian_ping_consumer.parse_url_utils('http://www.dianping.com/shop/568037503')
+
+    print(res)
 

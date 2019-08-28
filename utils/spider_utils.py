@@ -520,7 +520,7 @@ def test_ip(ip_address):
 
 
 if __name__ == '__main__':
-    # change_ip_cookies('http://www.dianping.com/shop/110281977')
+    change_ip_cookies('http://www.dianping.com/shop/110281977')
     # result = requests_dianping2("http://icanhazip.com")
     # if result is None:
     #     print(result)
