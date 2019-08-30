@@ -96,12 +96,11 @@ def test(url):
 
 
 if __name__ == '__main__':
-    # ss = no_delay_cookies("http://www.dianping.com/shop/98394949")
-    # print(ss)
+    ss = no_delay_cookies("http://www.dianping.com/shop/98394949")
+    print(ss)
 
     # auto_search()
 
     # test("http://www.dianping.com/shop/2767525")
     # test("http://www.baidu.com")
 
-    pass

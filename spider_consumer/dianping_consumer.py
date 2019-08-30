@@ -3,11 +3,16 @@ from bs4 import BeautifulSoup
 from utils import spider_utils
 import re
 import os
+from utils.spider_utils2 import SpiderUtils
+from configparser import ConfigParser
 
+cfg = ConfigParser()
+cfg.read('../config/config.ini')
 
 class DianPingConsumer(object):
-    def __init__(self, write_file_path, read_file_path=None):
+    def __init__(self, write_file_path, requests_dp:SpiderUtils, read_file_path=None):
         self.write_file_path = write_file_path
+        self.requests_dp = requests_dp
         self.read_file_path = read_file_path
 
 
@@ -17,12 +22,15 @@ class DianPingConsumer(object):
         解析点评详细页 url
         :return:
         """
-        response = spider_utils.requests_dianping2(url2)
-    
+        response = self.requests_dp.requests_dp(url2)
+
         # print(response.text)
         # 不能这样使用地址不对,因为本中可能存在这种值
-        # if response is not None and response.text.find("地址不对") == -1:
-        if response is not None:
+        # if response is not None and response.text.find("request uri not exist") == -1:
+
+        if response.text.find("request uri not exist") != -1:
+            return 'URL无效'
+        elif response is not None:
             soup = BeautifulSoup(response.text, features="lxml")
             # print(response.text)
     
@@ -68,13 +76,14 @@ class DianPingConsumer(object):
     
             # 检测IP是否被封
             if counter_none == 4:
-                print("IP-Cookie失效, 更换....")
+                # print("IP-Cookie失效, 更换....")
+                print("IP-Cookie失效, 更换IP....")
                 # selenium
                 # cookies = selenium_utils.no_delay_cookies(url)
                 # print(cookies)
     
-                spider_utils.change_ip_cookies(url2)
-                # spider_utils.change_ip()
+                # self.requests_dp.change_ip_cookies(url2)
+                self.requests_dp.change_ip()
                 print("重新执行该方法")
                 return self.parse_url_utils(url2)
             else:
@@ -145,7 +154,12 @@ if __name__ == '__main__':
     write_file_path1 = 'dianping_hangzhou_data_spa.txt'
     read_file_path1 = '../spider_producer/url_all.txt'
 
-    dian_ping_consumer = DianPingConsumer(write_file_path1, read_file_path1)
+
+    ip_proxy = cfg.get('proxy_host', 'host1')
+    print(ip_proxy)
+    ss = SpiderUtils('../config/ip_proxy_host1', ip_proxy)
+
+    dian_ping_consumer = DianPingConsumer(write_file_path1, ss, read_file_path1)
 
     # dian_ping_consumer.file_to_file()
 

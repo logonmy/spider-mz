@@ -1,0 +1,4 @@
+
+
+class GetCookie(object):
+    pass
