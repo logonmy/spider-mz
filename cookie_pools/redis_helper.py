@@ -48,7 +48,7 @@ class RedisHelper(object):
                         if cookie == '{}':
                             print('空')
                         else:
-                            self.redis_client.set(key1, cookie, ex=600)
+                            self.redis_client.set(key1, cookie, ex=1200)
                             key1 += 1
 
     def set_value(self):

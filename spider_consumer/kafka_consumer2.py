@@ -92,8 +92,8 @@ if __name__ == '__main__':
     #
     #
     # ##### 启动 consumer5
-    ssh_proxy5 = cfg.get('proxy_host', 'host5')
-    print('线程5启动-------')
-    spider_utils5 = SpiderUtils('../config/ip_proxy_host5', ssh_proxy5)
-    consumer5 = KafkaConsumerUtils(server2_list, topic2, group2, '进程5', spider_utils5)
-    consumer5.start()
+    # ssh_proxy5 = cfg.get('proxy_host', 'host5')
+    # print('线程5启动-------')
+    # spider_utils5 = SpiderUtils('../config/ip_proxy_host5', ssh_proxy5)
+    # consumer5 = KafkaConsumerUtils(server2_list, topic2, group2, '进程5', spider_utils5)
+    # consumer5.start()
