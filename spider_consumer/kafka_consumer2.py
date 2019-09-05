@@ -73,9 +73,9 @@ if __name__ == '__main__':
     spider_utils2 = SpiderUtils('../config/ip_proxy_host2', ssh_proxy2)
     consumer2 = KafkaConsumerUtils(server2_list, topic2, group2, '进程2', spider_utils2)
     consumer2.start()
-
-
-    ##### 启动 consumer3
+    #
+    #
+    # ##### 启动 consumer3
     ssh_proxy3 = cfg.get('proxy_host', 'host3')
     print('线程3启动-------')
     spider_utils3 = SpiderUtils('../config/ip_proxy_host3', ssh_proxy3)
@@ -89,8 +89,7 @@ if __name__ == '__main__':
     spider_utils4 = SpiderUtils('../config/ip_proxy_host4', ssh_proxy4)
     consumer4 = KafkaConsumerUtils(server2_list, topic2, group2, '进程4', spider_utils4)
     consumer4.start()
-    #
-    #
+
     # ##### 启动 consumer5
     # ssh_proxy5 = cfg.get('proxy_host', 'host5')
     # print('线程5启动-------')
