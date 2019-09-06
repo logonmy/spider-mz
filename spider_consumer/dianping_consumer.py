@@ -5,6 +5,8 @@ import re
 import os
 from utils.spider_utils2 import SpiderUtils
 from configparser import ConfigParser
+from cookie_pools import redis_helper
+
 
 cfg = ConfigParser()
 cfg.read('../config/config.ini')
@@ -14,7 +16,7 @@ class DianPingConsumer(object):
         self.write_file_path = write_file_path
         self.requests_dp = requests_dp
         self.read_file_path = read_file_path
-
+        self.redis_client = redis_helper.RedisHelper()
 
     # @staticmethod
     def parse_url_utils(self, url2):
@@ -22,8 +24,16 @@ class DianPingConsumer(object):
         解析点评详细页 url
         :return:
         """
-        response = self.requests_dp.requests_dp(url2)
+        ##### 从redis获取cookie
+        random_key = self.redis_client.get_random_key()
+        cookies_bytes = self.redis_client.get(random_key)
 
+        # 字节转字典
+        cookies_str = str(cookies_bytes, encoding='utf-8')
+        cookies = eval(cookies_str)
+        ##### 从redis获取cookie
+
+        response = self.requests_dp.requests_dp(url2, cookies)
         # print(response.text)
         # 不能这样使用地址不对,因为本中可能存在这种值
         # if response is not None and response.text.find("request uri not exist") == -1:
@@ -77,7 +87,10 @@ class DianPingConsumer(object):
             # 检测IP是否被封
             if counter_none == 4:
                 # print("IP-Cookie失效, 更换....")
-                print("IP-Cookie失效, 更换IP....")
+                print("IP-Cookie失效, 更换IP删除该cookie....")
+
+                self.redis_client.del_record(random_key)
+                print('删除成功')
                 # selenium
                 # cookies = selenium_utils.no_delay_cookies(url)
                 # print(cookies)
@@ -139,16 +152,17 @@ class DianPingConsumer(object):
                     counter +=1
 
 
-    def kafka_to_file(self, args):
-        province = args.get('province')
-        city = args.get('city')
-        region = args.get('region')
-        url = args.get('url')
+    def kafka_to_file(self, message_dict):
+        province = message_dict.get('province')
+        city = message_dict.get('city')
+        region = message_dict.get('region')
+        url = message_dict.get('url')
 
-        str2 = province + '^' + city + '^' + region + '^' + self.parse_url_utils(url)
+        results = province + '^' + city + '^' + region + '^' + self.parse_url_utils(url)
 
         with open(self.write_file_path, "a+") as f2:
-            f2.write(str2 + "\n")
+            f2.write(results + "\n")
+
 
 if __name__ == '__main__':
     write_file_path1 = 'dianping_hangzhou_data_spa.txt'

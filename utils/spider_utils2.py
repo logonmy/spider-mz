@@ -10,15 +10,18 @@ from configparser import ConfigParser
 from utils import selenium_utils
 from cookie_pools import redis_helper
 import random
+
+
 cfg = ConfigParser()
 cfg.read('../config/config.ini')
+
 
 class SpiderUtils(object):
     def __init__(self, ip_proxy_host, ssh_ip):
         # self.dp_increase_id = dp_increase_id
         self.ip_proxy_host = ip_proxy_host
         self.ssh_ip = ssh_ip
-        self.redis_client = redis_helper.RedisHelper()
+        # self.redis_client = redis_helper.RedisHelper()
         # # 如果 dp_increase_id 文件不存在, 则新建
         # if not os.path.exists(dp_increase_id):
         #     with open(dp_increase_id, 'w') as f1:
@@ -28,8 +31,7 @@ class SpiderUtils(object):
         #     open(ip_proxy_host, 'w').close()
         #     self.change_ip_cookies()
 
-
-    def requests_dp(self, url1):
+    def requests_dp(self, url1, cookies):
         # print('34---加载', self.ip_proxy_host)
         # 动态加载 user_agent
         user_agent = ["Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1 Safari/605.1.15",
@@ -87,7 +89,7 @@ class SpiderUtils(object):
             if ip_res !=0:
                 print("该IP无效重试 ", new_ip)
                 self.change_ip()
-                return self.requests_dp(url1)
+                return self.requests_dp(url1, cookies)
             else:
                 print("该IP有效 ", new_ip)
                 retry_times = 0
@@ -100,7 +102,6 @@ class SpiderUtils(object):
                     proxies = [ip_dict]
                     proxy_ip = random.choice(proxies)
 
-                    print('98----', proxy_ip)
                     try:
                         # 休眠
                         # sleep_time = random.uniform(3, 9)
@@ -111,25 +112,7 @@ class SpiderUtils(object):
                         # print("休眠", sleep_time)
                         # time.sleep(sleep_time)
 
-                        # print("---335555---", cookies)
-                        cookies_bytes = self.redis_client.random_get()
-                        # 字节转字典
-                        cookies_str = str(cookies_bytes, encoding='utf-8')
-                        cookies = eval(cookies_str)
-                        print('11111----', cookies)
-
-                        # cc = {'_hc.v': '10669807-edf1-ad3b-47ed-914d533f354e.1567476178',
-                        #       '_lxsdk_s': '16cf4dc4f51-8cc-99-dd9%7C%7C29',
-                        #       '_lxsdk_cuid': '16cf4dc595ec8-0ede2f81ad248e-38627506-fa000-16cf4dc595fb3',
-                        #       '_lxsdk': '16cf4dc595ec8-0ede2f81ad248e-38627506-fa000-16cf4dc595fb3',
-                        #       'cye': 'shanghai', 'cityid': '1', 'cy': '1'}
-
-                        cc = {'cy': '1', ' cityid': '1', ' cye': 'shanghai', ' _hc.v': '10669807-edf1-ad3b-47ed-914d533f354e.1567476178', ' _lxsdk': '16cf4dc595ec8-0ede2f81ad248e-38627506-fa000-16cf4dc595fb3', ' _lxsdk_cuid': '16cf4dc595ec8-0ede2f81ad248e-38627506-fa000-16cf4dc595fb3', ' aburl': '1', ' cy': '1', ' s_ViewType': '10', ' _dp.ac.v': 'f038a699-0eda-43b9-a3aa-8298703298a2', ' ctu': '2d20b58f89cf5ab6d60c5987c1994718c71598adf7700b4dc67cb58bdc00ed32', ' uamo': '17095497138', ' _lx_utm': 'utm_source%3DBaidu%26utm_medium%3Dorganic', ' dper': 'cfdb7a87ce88964d11483bed24be86e68102534eee9f1138f5db8394b2d1321c5445e810328205d9a561c87c09408c9aa949232bbe5ae75f7872652f990c06335bf6b2b3b81c72b3925258eece2f4e4f98f5bfd117346ecf92e70f79a040e80e', ' ll': '7fd06e815b796be3df069dec7836c3df', ' ua': '17095497139', ' _lxsdk_s': '16d000e0ced-db-535-f3%7C%7C32'}
-
-                        # cc = {'cityid': '1', ' cy': '1', ' cye': 'shanghai', ' _lxsdk_s': '16d0016e7f0-921-7f7-d7d%7C%7C11', ' _lx_utm': 'utm_source%3DBaidu%26utm_medium%3Dorganic', ' _hc.v': 'ccf4c4c1-f8b1-1084-e507-91fd9af023d3.1565777109', ' _lxsdk': '16c8f96a0e4c8-00042c829b81f28-3f616c4d-fa000-16c8f96a0e484', ' _lxsdk_cuid': '16c8f96a0e4c8-00042c829b81f28-3f616c4d-fa000-16c8f96a0e484'}
-                        cc = {'cy': '1', ' cityid': '1', ' cye': 'shanghai', ' _hc.v': '10669807-edf1-ad3b-47ed-914d533f354e.1567476178', ' _lxsdk': '16cf4dc595ec8-0ede2f81ad248e-38627506-fa000-16cf4dc595fb3', ' _lxsdk_cuid': '16cf4dc595ec8-0ede2f81ad248e-38627506-fa000-16cf4dc595fb3', ' aburl': '1', ' cy': '1', ' s_ViewType': '10', ' _dp.ac.v': 'f038a699-0eda-43b9-a3aa-8298703298a2', ' ctu': '2d20b58f89cf5ab6d60c5987c1994718c71598adf7700b4dc67cb58bdc00ed32', ' uamo': '17095497138', ' ua': '17095497139', ' dper': 'cfdb7a87ce88964d11483bed24be86e667527606b807d386fdc14484951d6f4f17f78973bd66ec2ca1e867750eccc904cf6140b925f0b5efca19ebb98369307ecd290528c81f6c5a623a1c3474d42601e353e2d9754eadda09bae6fd7cf20012', ' ll': '7fd06e815b796be3df069dec7836c3df', ' _lx_utm': 'utm_source%3DBaidu%26utm_medium%3Dorganic', ' _lxsdk_s': '16d0051fac7-4e2-c47-1fa%7C%7C72'}
-
-                        time.sleep(random.random()+1)
+                        # time.sleep(random.random()+1)
                         response = requests.get(url1, headers=headers, proxies=proxy_ip, timeout=10, cookies=cookies)
 
                         print("-"*20)
@@ -145,7 +128,6 @@ class SpiderUtils(object):
                         retry_times = retry_times + 1
                         # print("重试第%d"%retry_times,"报错了", e)
                 return None
-
 
     def change_ip_cookies(self, url1='http://www.dianping.com/shop/98394949'):
         start_time = datetime.datetime.now()
@@ -183,7 +165,6 @@ class SpiderUtils(object):
         if repeat_flag is True:
             self.change_ip()
 
-
     def change_ip(self):
         ip_port = self.ssh_ip.split(':') # 获取VPS登录方式
 
@@ -208,7 +189,6 @@ class SpiderUtils(object):
                     f_w.write("重复IP: " + res_ip)
                 self.change_ip()
 
-
     @staticmethod
     def test_ip(ip_address):
         """
@@ -229,6 +209,7 @@ class SpiderUtils(object):
         #     print("Port is not open")
 
         return ip_result
+
 
 
 if __name__ == '__main__':

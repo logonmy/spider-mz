@@ -10,7 +10,6 @@ cfg.read('../config/config.ini')
 
 
 width, height = 1280, 800
-
 class RedisHelper(object):
     def __init__(self):
         self.redis_client = redis.Redis(host=cfg.get('redis', 'host'), port=cfg.get('redis', 'port'))
@@ -21,8 +20,10 @@ class RedisHelper(object):
     def get_random_key(self):
         return self.redis_client.randomkey()
 
-    def random_get(self):
-        return self.get(self.get_random_key())
+    def get_random_record(self):
+        random_key = self.get_random_key()
+        value = self.get(random_key)
+        return {b'key':random_key, b'value':value}
 
     def get_max_key(self):
         all_keys = self.redis_client.keys()
@@ -74,8 +75,13 @@ class RedisHelper(object):
 
 
         with open('../spider_producer/url_all.txt') as f:
+
             key1 = self.get_max_key()
             for url in f.readlines():
+                # await page.deleteCookie()
+
+                await page._client.send('Network.clearBrowserCookies')
+
                 cookie_dict = dict()
 
                 await asyncio.sleep(2)
@@ -84,6 +90,19 @@ class RedisHelper(object):
                 url_final = url.strip('\n').split('^')[3]
 
                 await page.goto(url_final, {'waitUntil':'domcontentloaded'})
+
+                content = await page.content()
+                title = await page.title()
+
+                if title == '验证中心':
+                    print('需要验证---------')
+                    await asyncio.sleep(5)
+                    print(await page.content())
+                    await page.hover('#yodaMoveingBar')
+                    await page.mouse.down()
+                    await page.mouse.move(900, 0, {'steps': 7})
+                    await page.mouse.up()
+
                 cookie_list_all = await page.cookies()
                 for cookie_list_dict in cookie_list_all:
                     cookie_dict[cookie_list_dict.get('name')] = cookie_list_dict.get('value')
@@ -109,6 +128,10 @@ class RedisHelper(object):
                         self.redis_client.set(key1, cookie, ex=1200)
                         key1 += 1
 
+            await page.close()
+
+    def del_record(self, key):
+        self.redis_client.delete(key)
 
 if __name__ == '__main__':
     # host = cfg.get('redis', 'host')
@@ -123,6 +146,6 @@ if __name__ == '__main__':
     #     print(r.random_get())
 
     # r.set_cookie()
-
-
     asyncio.get_event_loop().run_until_complete(r.set_cookie_by_pyppeteer())
+
+
