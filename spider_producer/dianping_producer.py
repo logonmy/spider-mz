@@ -32,21 +32,37 @@ class DianPingProducer(object):
         cookies_str = str(cookies_bytes, encoding='utf-8')
         cookies = eval(cookies_str)
 
-        response = self.request_dp.requests_dp(url_org, cookies=cookies)
-        soup = BeautifulSoup(response.text, features="lxml")
-    
-        # 存储获取到的url
-        url_set = set([])
-        for link in soup.find_all("a"):
-            ll =  link.get("href")
-    
-            # 获取满足条件的url
-            if isinstance(ll, str):
-                if ll.find("http://www.dianping.com/shop") == 0 and ll.find("#")==-1:
-                    if ll.find("review") == -1:
-                        url_set.add(ll)
+        if '_lxsdk_s' in cookies.keys():
+            cookies['_lxsdk_s'] = str(cookies['_lxsdk_s'])[:-1] + str(3)
+            # print("cookies-----", cookies)
+            # print(cookies['_lxsdk_s'])
 
-        return url_set
+        response = self.request_dp.requests_dp(url_org, cookies=cookies)
+
+        response_text = response.text
+        if response_text.find('é¡µé¢ä¸å­å¨ | ç¾å¢ç¹è¯') != -1:
+
+            print('4466-- 更换IP重新解析')
+            self.redis_client.del_record(random_key)
+            print('删除成功')
+            self.request_dp.change_ip()
+            return self.parse_page_detail_urls(url_org)
+
+
+        else:
+            soup = BeautifulSoup(response_text, features="lxml")
+            # 存储获取到的url
+            url_set = set([])
+            for link in soup.find_all("a"):
+                ll =  link.get("href")
+
+                # 获取满足条件的url
+                if isinstance(ll, str):
+                    if ll.find("http://www.dianping.com/shop") == 0 and ll.find("#")==-1:
+                        if ll.find("review") == -1:
+                            url_set.add(ll)
+
+            return url_set
 
 
     # def build_all_page_urls(self):
@@ -65,7 +81,6 @@ class DianPingProducer(object):
     #             url_list.append(url_former)
     #
     #     return url_list
-
 
     def get_all_detail_page_urls(self, url_page_list):
         """

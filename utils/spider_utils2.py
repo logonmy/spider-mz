@@ -169,7 +169,7 @@ class SpiderUtils(object):
     def change_ip(self):
         ip_port = self.ssh_ip.split(':') # 获取VPS登录方式
 
-        print(ip_port)
+        # print(ip_port)
         start_time = datetime.datetime.now()
         command_linux = "ssh root@%s -p%s 'sh restart_pp.sh'"%(ip_port[0], ip_port[1])
 
@@ -181,7 +181,7 @@ class SpiderUtils(object):
 
         with open(self.ip_proxy_host) as f_r:
             all_ip = f_r.read()
-            print(all_ip, res_ip)
+            # print(all_ip, res_ip)
             if all_ip.find(res_ip) == -1:
                 with open(self.ip_proxy_host, "a+") as f_w:
                     f_w.write(res_ip)

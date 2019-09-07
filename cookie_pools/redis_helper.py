@@ -72,8 +72,8 @@ class RedisHelper(object):
         """
         browser = await launch(headless=False, autoClose=False, args=['--disable-infobars',
                                                                       f'--window-size={width},{height}',
-                                                                      '--proxy-server=49.64.41.56:32982',
-                                                                      '--proxy-server=49.64.41.56:32982'
+                                                                      '--proxy-server=49.73.24.167:32982',
+                                                                      '--proxy-server=49.73.24.167:32982'
                                                                       ])
 
         # '--proxy-server=49.84.234.123:32982',
@@ -105,11 +105,11 @@ class RedisHelper(object):
 
                 if title == '验证中心':
                     print('需要验证---------')
-                    await asyncio.sleep(8)
+                    await asyncio.sleep(3)
                     print(await page.content())
                     await page.hover('#yodaMoveingBar')
                     await page.mouse.down()
-                    await page.mouse.move(800, 0, {'steps': 9})
+                    await page.mouse.move(750, 0, {'steps': 9})
                     await page.mouse.up()
 
                 cookie_list_all = await page.cookies()
