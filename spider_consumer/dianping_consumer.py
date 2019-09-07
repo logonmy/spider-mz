@@ -34,82 +34,92 @@ class DianPingConsumer(object):
         ##### 从redis获取cookie
 
         response = self.requests_dp.requests_dp(url2, cookies)
+        response_text = response.text
+
         # print(response.text)
         # 不能这样使用地址不对,因为本中可能存在这种值
         # if response is not None and response.text.find("request uri not exist") == -1:
 
-        if response.text.find("request uri not exist") != -1:
+        if response_text.find("request uri not exist") != -1:
             return 'URL无效'
-        elif response is not None:
-            soup = BeautifulSoup(response.text, features="lxml")
-            # print(response.text)
-    
-            # 如果counter_none 值为4,则说明IP被封,需更换IP
-            counter_none = 0
-    
-            # 医院名
-            hospital_name = ""
-            try:
-                hospital_name, b = soup.find("h1").stripped_strings
-                # print(hospital_name)
-            except Exception as e:
-                counter_none += 1
-                print(e)
-    
-            # 地址
-            address = ""
-            try:
-                for i in soup.find("div", attrs={"class":"expand-info address"}).find_all("span"):
-                    address += (str(i.get_text()).strip())
-                    # print(address)
-            except Exception as e:
-                counter_none += 1
-                print(e)
-    
-            # 电话
-            tel = ""
-            try:
-                tel = str(soup.find("p", attrs={"class":"expand-info tel"}).find("span", "item").get_text()).strip()
-                # print(tel)
-            except Exception as e:
-                counter_none += 1
-                print(e)
-    
-            # 星级
-            score = ""
-            try:
-                stars_str = soup.find("div", attrs={"class":"brief-info"}).find_all("span")[0]
-                score = re.findall(r"\d+\.?\d*",str(stars_str).strip())[0]
-            except Exception as e:
-                counter_none += 1
-                print(e)
-    
-            # 检测IP是否被封
-            if counter_none == 4:
-                # print("IP-Cookie失效, 更换....")
-                print("IP-Cookie失效, 更换IP删除该cookie....")
+        elif response_text.find('é¡µé¢ä¸å­å¨ | ç¾å¢ç¹è¯') != -1:
 
-                self.redis_client.del_record(random_key)
-                print('删除成功')
-                # selenium
-                # cookies = selenium_utils.no_delay_cookies(url)
-                # print(cookies)
-    
-                # self.requests_dp.change_ip_cookies(url2)
-                self.requests_dp.change_ip()
-                print("重新执行该方法")
-                return self.parse_url_utils(url2)
-            else:
-                print('---217----')
-                str2 = url2 + "^" + hospital_name + "^" + address + "^" + tel + "^" + score
-                print(hospital_name, address, tel, score)
-    
-                return str2
-                # with open("dianping_data_huangpu_spa.txt", "a+") as f:
-                #     f.write(str2 + "\n")
-        else:
-            print('#'*20)
+            # print('4466-- 更换IP重新解析')
+            self.redis_client.del_record(random_key)
+            # print('删除成功')
+            self.requests_dp.change_ip()
+
             return self.parse_url_utils(url2)
+        elif response is not None:
+
+            if response_text.find('<h1 class="shop-name">') != -1:
+                soup = BeautifulSoup(response_text, features="lxml")
+
+                # 如果counter_none 值为4,则说明IP被封,需更换IP
+                counter_none = 0
+
+                # 医院名
+                hospital_name = ""
+                try:
+                    hospital_name, b = soup.find("h1").stripped_strings
+                    # print(hospital_name)
+                except Exception as e:
+                    counter_none += 1
+                    print(e)
+
+                # 地址
+                address = ""
+                try:
+                    for i in soup.find("div", attrs={"class":"expand-info address"}).find_all("span"):
+                        address += (str(i.get_text()).strip())
+                        # print(address)
+                except Exception as e:
+                    counter_none += 1
+                    print(e)
+
+                # 电话
+                tel = ""
+                try:
+                    tel = str(soup.find("p", attrs={"class":"expand-info tel"}).find("span", "item").get_text()).strip()
+                    # print(tel)
+                except Exception as e:
+                    counter_none += 1
+                    print(e)
+
+                # 星级
+                score = ""
+                try:
+                    stars_str = soup.find("div", attrs={"class":"brief-info"}).find_all("span")[0]
+                    score = re.findall(r"\d+\.?\d*",str(stars_str).strip())[0]
+                except Exception as e:
+                    counter_none += 1
+                    print(e)
+
+                # 检测IP是否被封
+                if counter_none == 4:
+                    # print("IP-Cookie失效, 更换....")
+                    print("IP-Cookie失效, 更换IP删除该cookie....")
+
+                    self.redis_client.del_record(random_key)
+                    print('删除成功')
+                    # selenium
+                    # cookies = selenium_utils.no_delay_cookies(url)
+                    # print(cookies)
+
+                    # self.requests_dp.change_ip_cookies(url2)
+                    self.requests_dp.change_ip()
+                    print("重新执行该方法")
+                    return self.parse_url_utils(url2)
+                else:
+                    str2 = url2 + "^" + hospital_name + "^" + address + "^" + tel + "^" + score
+                    print(hospital_name, address, tel, score)
+
+                    return str2
+                    # with open("dianping_data_huangpu_spa.txt", "a+") as f:
+                    #     f.write(str2 + "\n")
+            else:
+                print('#'*20, 'URL解析失败')
+                return 'URL解析失败'
     
     
     def file_to_file(self):

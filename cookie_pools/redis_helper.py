@@ -5,6 +5,7 @@ import time
 from pyppeteer import launch
 import asyncio
 
+
 cfg = ConfigParser()
 cfg.read('../config/config.ini')
 
@@ -32,7 +33,6 @@ class RedisHelper(object):
         else:
             keys_int = [int(key) for key in all_keys]
             return max(keys_int)
-
 
     def set_cookie(self):
         """
@@ -66,13 +66,22 @@ class RedisHelper(object):
 
     async def set_cookie_by_pyppeteer(self):
         """
+        通过文件的方式
         设置过期时间,时间过后,key value都会删除
         :return:
         """
-        browser = await launch(headless=False, autoClose=False, args=['--disable-infobars', f'--window-size={width},{height}'])
+        browser = await launch(headless=False, autoClose=False, args=['--disable-infobars',
+                                                                      f'--window-size={width},{height}',
+                                                                      '--proxy-server=49.64.41.56:32982',
+                                                                      '--proxy-server=49.64.41.56:32982'
+                                                                      ])
+
+        # '--proxy-server=49.84.234.123:32982',
+        # '--proxy-server=49.84.234.123:32982'
+
+
         page = await browser.newPage()
         await page.setViewport({'width': width, 'height': height})
-
 
         with open('../spider_producer/url_all.txt') as f:
 
@@ -96,11 +105,11 @@ class RedisHelper(object):
 
                 if title == '验证中心':
                     print('需要验证---------')
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(8)
                     print(await page.content())
                     await page.hover('#yodaMoveingBar')
                     await page.mouse.down()
-                    await page.mouse.move(900, 0, {'steps': 7})
+                    await page.mouse.move(800, 0, {'steps': 9})
                     await page.mouse.up()
 
                 cookie_list_all = await page.cookies()
@@ -134,16 +143,7 @@ class RedisHelper(object):
         self.redis_client.delete(key)
 
 if __name__ == '__main__':
-    # host = cfg.get('redis', 'host')
-    # port = cfg.get('redis', 'port')
-    #
-    # print(host, port)
-
     r = RedisHelper()
-    # r.set()
-
-    # for i in range(10):
-    #     print(r.random_get())
 
     # r.set_cookie()
     asyncio.get_event_loop().run_until_complete(r.set_cookie_by_pyppeteer())

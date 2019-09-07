@@ -40,9 +40,10 @@ class KafkaConsumerUtils(multiprocessing.Process):
                                  group_id=self.group_id,
                                  bootstrap_servers=self.server)
 
+
         # message.value.decode('utf-8')
         for message in consumer:
-
+            print('446666---  ', self.process_id)
             # 字节转字典
             message_str = str(message.value, encoding='utf-8')
             message_dict = eval(message_str)

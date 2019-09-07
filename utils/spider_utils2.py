@@ -32,6 +32,7 @@ class SpiderUtils(object):
         #     self.change_ip_cookies()
 
     def requests_dp(self, url1, cookies):
+        print('当前url  ', url1)
         # print('34---加载', self.ip_proxy_host)
         # 动态加载 user_agent
         user_agent = ["Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1 Safari/605.1.15",
@@ -73,7 +74,7 @@ class SpiderUtils(object):
 
             if new_ip.find("重复IP") == 0:
                 self.change_ip()
-                return self.requests_dp(url1)
+                return self.requests_dp(url1, cookies)
 
             ip_res = self.test_ip(new_ip)
 
@@ -87,11 +88,11 @@ class SpiderUtils(object):
             #     # print(cookies['_lxsdk_s'])
 
             if ip_res !=0:
-                print("该IP无效重试 ", new_ip)
+                # print("该IP无效重试 ", new_ip)
                 self.change_ip()
                 return self.requests_dp(url1, cookies)
             else:
-                print("该IP有效 ", new_ip)
+                # print("该IP有效 ", new_ip)
                 retry_times = 0
                 while retry_times < 3:
                     ip_dict = {
@@ -115,10 +116,10 @@ class SpiderUtils(object):
                         # time.sleep(random.random()+1)
                         response = requests.get(url1, headers=headers, proxies=proxy_ip, timeout=10, cookies=cookies)
 
-                        print("-"*20)
-                        print(response.headers)
-                        print(response.request.headers)
-                        print("-"*20)
+                        # print("-"*20)
+                        # print(response.headers)
+                        # print(response.request.headers)
+                        # print("-"*20)
 
                         return response
                     except requests.exceptions.ConnectionError as e:
