@@ -4,7 +4,7 @@ from utils import selenium_utils
 import time
 from pyppeteer import launch
 import asyncio
-
+import random
 
 cfg = ConfigParser()
 cfg.read('../config/config.ini')
@@ -72,18 +72,14 @@ class RedisHelper(object):
         """
         browser = await launch(headless=False, autoClose=False, args=['--disable-infobars',
                                                                       f'--window-size={width},{height}',
-                                                                      '--proxy-server=49.73.24.167:32982',
-                                                                      '--proxy-server=49.73.24.167:32982'
+                                                                      '--proxy-server=113.57.56.117:32982',
+                                                                      '--proxy-server=113.57.56.117:32982'
                                                                       ])
-
-        # '--proxy-server=49.84.234.123:32982',
-        # '--proxy-server=49.84.234.123:32982'
-
 
         page = await browser.newPage()
         await page.setViewport({'width': width, 'height': height})
 
-        with open('../spider_producer/url_all.txt') as f:
+        with open('../spider_producer/url_page.txt') as f:
 
             key1 = self.get_max_key()
             for url in f.readlines():
@@ -109,7 +105,9 @@ class RedisHelper(object):
                     print(await page.content())
                     await page.hover('#yodaMoveingBar')
                     await page.mouse.down()
-                    await page.mouse.move(750, 0, {'steps': 9})
+
+                    # await page.mouse.move(750, 0, {'steps': 9})
+                    await page.mouse.move(random.randint(760, 850), 0, {'steps': random.randint(8,12)})
                     await page.mouse.up()
 
                 cookie_list_all = await page.cookies()
@@ -127,15 +125,20 @@ class RedisHelper(object):
                 #             self.redis_client.set(key1, cookie, ex=600)
                 #             key1 += 1
 
-                print(cookie_dict)
+                cookie_dict_keys = cookie_dict.keys()
+                if '_lxsdk_s' in cookie_dict_keys and len(cookie_dict_keys)>2:
+                    # print(cookie_dict)
+                    # cookie = str(cookie_dict)
+                    # if cookie == '{}':
+                    #     print('空')
+                    # else:
+                    #     self.redis_client.set(key1, cookie, ex=1200)
+                    #     key1 += 1
 
-                if '_lxsdk_s' in cookie_dict.keys():
                     cookie = str(cookie_dict)
-                    if cookie == '{}':
-                        print('空')
-                    else:
-                        self.redis_client.set(key1, cookie, ex=1200)
-                        key1 += 1
+                    print(cookie)
+                    self.redis_client.set(key1, cookie, ex=2400)
+                    key1 += 1
 
             await page.close()
 
@@ -144,7 +147,6 @@ class RedisHelper(object):
 
 if __name__ == '__main__':
     r = RedisHelper()
-
     # r.set_cookie()
     asyncio.get_event_loop().run_until_complete(r.set_cookie_by_pyppeteer())
 

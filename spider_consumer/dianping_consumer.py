@@ -34,7 +34,11 @@ class DianPingConsumer(object):
         ##### 从redis获取cookie
 
         response = self.requests_dp.requests_dp(url2, cookies)
-        response_text = response.text
+
+        if isinstance(response, str):
+            response_text = response
+        else:
+            response_text = response.text
 
         # print(response.text)
         # 不能这样使用地址不对,因为本中可能存在这种值
@@ -44,12 +48,12 @@ class DianPingConsumer(object):
             return 'URL无效'
         elif response_text.find('é¡µé¢ä¸å­å¨ | ç¾å¢ç¹è¯') != -1:
 
-            # print('4466-- 更换IP重新解析')
+            print('4477-- 更换IP重新解析')
             self.redis_client.del_record(random_key)
             # print('删除成功')
             self.requests_dp.change_ip()
-
             return self.parse_url_utils(url2)
+
         elif response is not None:
 
             if response_text.find('<h1 class="shop-name">') != -1:
@@ -119,7 +123,7 @@ class DianPingConsumer(object):
                     #     f.write(str2 + "\n")
             else:
                 print('#'*20, 'URL解析失败')
-                return 'URL解析失败'
+                return url2 + '^URL解析失败'
     
     
     def file_to_file(self):

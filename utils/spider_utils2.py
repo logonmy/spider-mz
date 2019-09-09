@@ -10,12 +10,14 @@ from configparser import ConfigParser
 from utils import selenium_utils
 from cookie_pools import redis_helper
 import random
+from pyppeteer import launch
+import asyncio
 
 
 cfg = ConfigParser()
 cfg.read('../config/config.ini')
 
-
+width, height = 1280, 800
 class SpiderUtils(object):
     def __init__(self, ip_proxy_host, ssh_ip):
         # self.dp_increase_id = dp_increase_id
@@ -35,13 +37,14 @@ class SpiderUtils(object):
         print('当前url  ', url1)
         # print('34---加载', self.ip_proxy_host)
         # 动态加载 user_agent
-        user_agent = ["Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1 Safari/605.1.15",
-                      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36',
-                      'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36',
-                      'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0',
-                        ]
         # user_agent = ["Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1 Safari/605.1.15",
-        #               ]
+        #               'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36',
+        #               'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36',
+        #               'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0',
+        #                 ]
+
+        user_agent = ["Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3494.0 Safari/537.36",
+                      ]
 
         # 封装请求头
         headers = dict()
@@ -103,25 +106,30 @@ class SpiderUtils(object):
                     proxies = [ip_dict]
                     proxy_ip = random.choice(proxies)
 
+                    print('ip-- ', proxy_ip)
                     try:
-                        # 休眠
-                        # sleep_time = random.uniform(3, 9)
-                        # print("休眠", sleep_time)
-                        # time.sleep(sleep_time)
-
-                        # sleep_time = random.uniform(2, 4)
-                        # print("休眠", sleep_time)
-                        # time.sleep(sleep_time)
-
-                        # time.sleep(random.random()+1)
                         response = requests.get(url1, headers=headers, proxies=proxy_ip, timeout=10, cookies=cookies)
 
+                        if response.text.find('é¡µé¢ä¸å­å¨ | ç¾å¢ç¹è¯') != -1:
+                            print('-----------11122224444')
+                            print(response.text)
+                            cccc = asyncio.get_event_loop().run_until_complete(self.get_page_by_pyppeteer(url1, new_ip))
+
+                            # return self.requests_dp(url1, cookies)
+
+                            # response1 = requests.get(url1, headers=headers, proxies=proxy_ip, timeout=10, cookies=cookies)
+                            #
+                            # print('---------1333333')
+                            # print(response1.text)
+                            return cccc
+
+                        else:
+                            return response
                         # print("-"*20)
                         # print(response.headers)
                         # print(response.request.headers)
                         # print("-"*20)
 
-                        return response
                     except requests.exceptions.ConnectionError as e:
                         retry_times = retry_times + 1
                         # print("重试第%d"%retry_times,"报错了", e)
@@ -213,18 +221,26 @@ class SpiderUtils(object):
 
         return ip_result
 
+    async def get_page_by_pyppeteer(self, url_final, ip_add):
+        browser = await launch(headless=False, autoClose=False, args=['--disable-infobars',
+                                                                      f'--window-size={width},{height}',
+                                                                      '--proxy-server=%s:32982'%(ip_add,),
+                                                                      '--proxy-server=%s:32982'%(ip_add,)
+                                                                      ])
+        page = await browser.newPage()
+        await page.setViewport({'width': width, 'height': height})
+        await page.goto(url_final, {'waitUntil':'domcontentloaded'})
+        title = await page.title()
 
+        if title == '验证中心':
+            print('需要验证---------')
+            await asyncio.sleep(4)
+            # print(await page.content())
+            await page.hover('#yodaMoveingBar')
+            await page.mouse.down()
+            await page.mouse.move(random.randint(760, 850), 0, {'steps': random.randint(8,12)})
+            await page.mouse.up()
+        # print(await page.content())
+        # await asyncio.sleep(3)
 
-if __name__ == '__main__':
-    ip_proxy = cfg.get('proxy_host', 'host4')
-    ss = SpiderUtils('../config/ip_proxy_host4', ip_proxy)
-    # ss.change_ip()
-
-    url = "http://www.dianping.com/shop/110281977"
-    res = ss.requests_dp(url)
-    # print(res.text.find('request uri not exist'))
-
-    print(res.text)
-    # ss.change_ip_cookies()
-
-    # print(ss.test_ip('10.2.29.13'))
+        return await page.content()
