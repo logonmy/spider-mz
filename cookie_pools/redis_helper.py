@@ -72,8 +72,8 @@ class RedisHelper(object):
         """
         browser = await launch(headless=False, autoClose=False, args=['--disable-infobars',
                                                                       f'--window-size={width},{height}',
-                                                                      '--proxy-server=113.57.56.117:32982',
-                                                                      '--proxy-server=113.57.56.117:32982'
+                                                                      '--proxy-server=58.19.15.103:32982',
+                                                                      '--proxy-server=58.19.15.103:32982'
                                                                       ])
 
         page = await browser.newPage()

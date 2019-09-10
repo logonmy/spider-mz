@@ -7,6 +7,7 @@ import asyncio
 from pyppeteer import launch
 from cookie_pools import redis_helper
 import time
+import random
 
 cfg = ConfigParser()
 cfg.read('../config/config.ini')
@@ -33,9 +34,14 @@ class DianPingProducer(object):
         cookies_str = str(cookies_bytes, encoding='utf-8')
         cookies = eval(cookies_str)
 
+
+        add_list = [20,40,60,80,100,120,121,140,160,180,181,200,221]
         if '_lxsdk_s' in cookies.keys():
-            cookies['_lxsdk_s'] = str(cookies['_lxsdk_s'])[:-1] + str(21)
-            print("cookies-----", cookies)
+            # cookies['_lxsdk_s'] = str(cookies['_lxsdk_s'])[:-1] + str(21)
+            # print("cookies-----", cookies)
+
+            ss1 = cookies.get('_lxsdk_s')
+            cookies['_lxsdk_s'] = ss1[0: ss1.rindex('C')+1] + str(random.choice(add_list))
 
         response = self.dianping.requests_dp(url_org, cookies=cookies)
 
@@ -111,8 +117,9 @@ class DianPingProducer(object):
         遍历解析获取到的 url_set
         :return: 详情页url
         """
-        str1 = ""
+
         for line1 in url_page_list1:
+            str1 = ''
 
             province = line1.strip('\n').split('^')[0]
             city = line1.strip('\n').split('^')[1]
@@ -123,9 +130,10 @@ class DianPingProducer(object):
             for res in url_sets:
                 print(res)
                 str1 = str1 + province + '^' + city + '^' + region + '^' + res + "\n"
-    
-        with open("url_all.txt", "a+") as f1:
-            f1.write(str1)
+
+
+            with open("url_all.txt", "a+") as f1:
+                f1.write(str1)
 
 
     def write_page_urls_kafka(self):
@@ -181,14 +189,12 @@ class DianPingProducer(object):
         # window-size, 设置页面显示
         browser = await launch(headless=False, autoClose=False, args=['--disable-infobars',
                                                                       f'--window-size={width},{height}'])
-
         page = await browser.newPage()
         await page.setViewport({'width': width, 'height': height})
         await page.goto(url1, {'waitUntil':'domcontentloaded'}) # 不加这个参数会, 点评页面会加载很久
-
         await page.click('#nav > div > ul > li:nth-child(5) > div.primary-container > span > a:nth-child(3)')
 
-        await asyncio.sleep(2)
+        await asyncio.sleep(1)
         pages = await browser.pages()
         await pages[-1].click('#classfy > a:nth-child(2)')
 
@@ -210,46 +216,50 @@ class DianPingProducer(object):
 
         page = await browser.newPage()
 
-
         for item in all_regions:
+
+            print(item)
             page_all = ''
-            await asyncio.sleep(1)
-            url = item.get('href')
-            region = item.get_text()
-            # print(url, region)
+            if 'http' or 'https' in str(item):
+                print(item)
 
-            await page.goto(url, {'waitUntil':'domcontentloaded'})
-            content1 = await page.content()
-            soup1 = BeautifulSoup(content1, features="lxml")
+                # await asyncio.sleep(1)
+                url = item.get('href')
+                region = item.get_text()
+                # print(url, region)
 
-            try:
-                max_size = soup1.find('div', attrs={'class':'page'}).find_all('a')[-2].get('title')
-            except Exception as e:
-                max_size = 0
-                print(e)
+                await page.goto(url, {'waitUntil':'domcontentloaded'})
+                content1 = await page.content()
+                soup1 = BeautifulSoup(content1, features="lxml")
 
-            # print('最大页码', max_size)
+                try:
+                    max_size = soup1.find('div', attrs={'class':'page'}).find_all('a')[-2].get('title')
+                except Exception as e:
+                    max_size = 0
+                    print(e)
 
-            first_page = self.province + '^' + self.city + '^' +  region + '^' + url
-            page_all = page_all + first_page + '\n'
+                # print('最大页码', max_size)
 
-            url_list.append(first_page)
+                first_page = self.province + '^' + self.city + '^' +  region + '^' + url
+                page_all = page_all + first_page + '\n'
 
-            if max_size != 0:
-                for i in range(int(max_size)):
-                    if i > 0:
-                        # url_former = "http://www.dianping.com/beijing/ch50/g158r5950p" + str(i+1) + "?cpt=5220127%2C19813864"
-                        url_former = url + "p" + str(i+1)
-                        page_num_str = self.province + '^' + self.city + '^' +  region + '^' + url_former
+                url_list.append(first_page)
 
-                        page_all = page_all + page_num_str + '\n'
-                        url_list.append(page_num_str)
+                if max_size != 0:
+                    for i in range(int(max_size)):
+                        if i > 0:
+                            # url_former = "http://www.dianping.com/beijing/ch50/g158r5950p" + str(i+1) + "?cpt=5220127%2C19813864"
+                            url_former = url + "p" + str(i+1)
+                            page_num_str = self.province + '^' + self.city + '^' +  region + '^' + url_former
+
+                            page_all = page_all + page_num_str + '\n'
+                            url_list.append(page_num_str)
 
             with open('url_page.txt', 'a+') as f:
                 f.write(page_all)
 
-        # page.close()
-        # browser.close()
+            # page.close()
+            # browser.close()
 
         return url_list
 
@@ -271,9 +281,9 @@ if __name__ == '__main__':
     print(ssh_proxy5)
     # ss = SpiderUtils('../config/ip_proxy_host4', ip_proxy)
 
-    dp = DianPingProducer('重庆市','重庆市','../config/ip_proxy_host5', ssh_proxy5)
+    dp = DianPingProducer('湖南省','长沙市','../config/ip_proxy_host5', ssh_proxy5)
 
-    # asyncio.get_event_loop().run_until_complete(dp.get_all_page_urls('http://www.dianping.com/chongqing'))
+    # asyncio.get_event_loop().run_until_complete(dp.get_all_page_urls('http://www.dianping.com/changsha'))
 
     # lll = ['江苏省^南京市^李遂去^http://www.dianping.com/nanjing/ch50/g158r69p30']
     # lll = ['江苏省^南京市^秦淮区^http://www.baidu.com']

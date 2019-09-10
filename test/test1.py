@@ -29,4 +29,6 @@ cy=1; cityid=1; cye=shanghai; _hc.v=10669807-edf1-ad3b-47ed-914d533f354e.1567476
 #
 # print(response.text.title())
 
-print(random.randint(700, 800))
+# print(random.randint(700, 800))
+
+

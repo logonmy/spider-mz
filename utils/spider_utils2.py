@@ -43,8 +43,15 @@ class SpiderUtils(object):
         #               'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0',
         #                 ]
 
+        # 公司笔记本
         user_agent = ["Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3494.0 Safari/537.36",
                       ]
+
+        # 自己
+        user_agent = ["Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3494.0 Safari/537.36",
+                      ]
+
+
 
         # 封装请求头
         headers = dict()
