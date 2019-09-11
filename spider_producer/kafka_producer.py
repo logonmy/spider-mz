@@ -52,8 +52,6 @@ if __name__ == '__main__':
             res_dict['url'] = line_list[3]
 
             # print(res_dict)
-
             producer1.producer(res_dict)
-
 
     producer1.close()

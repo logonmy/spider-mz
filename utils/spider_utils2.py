@@ -47,9 +47,9 @@ class SpiderUtils(object):
         user_agent = ["Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3494.0 Safari/537.36",
                       ]
 
-        # 自己
-        user_agent = ["Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3494.0 Safari/537.36",
-                      ]
+        # # 自己
+        # user_agent = ["Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3494.0 Safari/537.36",
+        #               ]
 
 
 
@@ -120,7 +120,7 @@ class SpiderUtils(object):
                         if response.text.find('é¡µé¢ä¸å­å¨ | ç¾å¢ç¹è¯') != -1:
                             print('-----------11122224444')
                             print(response.text)
-                            cccc = asyncio.get_event_loop().run_until_complete(self.get_page_by_pyppeteer(url1, new_ip))
+                            cccc = asyncio.get_event_loop().run_until_complete(self.get_page_by_pyppeteer(url1, new_ip, cookies))
 
                             # return self.requests_dp(url1, cookies)
 
@@ -228,7 +228,7 @@ class SpiderUtils(object):
 
         return ip_result
 
-    async def get_page_by_pyppeteer(self, url_final, ip_add):
+    async def get_page_by_pyppeteer(self, url_final, ip_add, cookie):
         browser = await launch(headless=False, autoClose=False, args=['--disable-infobars',
                                                                       f'--window-size={width},{height}',
                                                                       '--proxy-server=%s:32982'%(ip_add,),
@@ -236,12 +236,17 @@ class SpiderUtils(object):
                                                                       ])
         page = await browser.newPage()
         await page.setViewport({'width': width, 'height': height})
+
+
+        # await page.setCookie(cookie)
+
+
         await page.goto(url_final, {'waitUntil':'domcontentloaded'})
         title = await page.title()
 
         if title == '验证中心':
             print('需要验证---------')
-            await asyncio.sleep(4)
+            await asyncio.sleep(12)
             # print(await page.content())
             await page.hover('#yodaMoveingBar')
             await page.mouse.down()

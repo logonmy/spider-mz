@@ -6,7 +6,7 @@ import os
 from utils.spider_utils2 import SpiderUtils
 from configparser import ConfigParser
 from cookie_pools import redis_helper
-
+import random
 
 cfg = ConfigParser()
 cfg.read('../config/config.ini')
@@ -32,6 +32,15 @@ class DianPingConsumer(object):
         cookies_str = str(cookies_bytes, encoding='utf-8')
         cookies = eval(cookies_str)
         ##### 从redis获取cookie
+
+        # add_list = [20,40,60,80,100,120,121,140,160,180,181,200,221]
+        add_list = [21,41,61,81,121,141]
+        if '_lxsdk_s' in cookies.keys():
+            # cookies['_lxsdk_s'] = str(cookies['_lxsdk_s'])[:-1] + str(21)
+            # print("cookies-----", cookies)
+
+            ss1 = cookies.get('_lxsdk_s')
+            cookies['_lxsdk_s'] = ss1[0: ss1.rindex('C')+1] + str(random.choice(add_list))
 
         response = self.requests_dp.requests_dp(url2, cookies)
 

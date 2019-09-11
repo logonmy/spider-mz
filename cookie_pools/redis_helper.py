@@ -72,8 +72,8 @@ class RedisHelper(object):
         """
         browser = await launch(headless=False, autoClose=False, args=['--disable-infobars',
                                                                       f'--window-size={width},{height}',
-                                                                      '--proxy-server=58.19.15.103:32982',
-                                                                      '--proxy-server=58.19.15.103:32982'
+                                                                      '--proxy-server=58.19.62.35:32982',
+                                                                      '--proxy-server=58.19.62.35:32982'
                                                                       ])
 
         page = await browser.newPage()
@@ -101,7 +101,7 @@ class RedisHelper(object):
 
                 if title == '验证中心':
                     print('需要验证---------')
-                    await asyncio.sleep(3)
+                    await asyncio.sleep(6)
                     print(await page.content())
                     await page.hover('#yodaMoveingBar')
                     await page.mouse.down()
